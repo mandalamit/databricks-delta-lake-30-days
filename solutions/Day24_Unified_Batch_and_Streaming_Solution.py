@@ -13,7 +13,7 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC USE retail_lakehouse;
+# MAGIC USE SCHEMA retail_lakehouse;
 # MAGIC -- Run the PySpark streaming cell first, then verify:
 # MAGIC SELECT COUNT(*) AS streamed_rows FROM orders_stream_sink;
 
@@ -24,16 +24,17 @@
 
 # COMMAND ----------
 
-checkpoint_path = "/tmp/retail_lakehouse/checkpoints/day24_orders_stream"
+catalog = spark.sql("SELECT current_catalog()").collect()[0][0]
+checkpoint_path = f"/Volumes/{catalog}/retail_lakehouse/raw_data/checkpoints/day24_orders_stream"
 dbutils.fs.rm(checkpoint_path, recurse=True)
 
 query = (
-    spark.readStream.table("retail_lakehouse.orders_base")
+    spark.readStream.table(f"{catalog}.retail_lakehouse.orders_base")
     .writeStream
     .format("delta")
     .option("checkpointLocation", checkpoint_path)
     .trigger(availableNow=True)
-    .toTable("retail_lakehouse.orders_stream_sink")
+    .toTable(f"{catalog}.retail_lakehouse.orders_stream_sink")
 )
 query.awaitTermination()
-print("Stream completed. Row count:", spark.table("retail_lakehouse.orders_stream_sink").count())
+print("Stream completed. Row count:", spark.table(f"{catalog}.retail_lakehouse.orders_stream_sink").count())

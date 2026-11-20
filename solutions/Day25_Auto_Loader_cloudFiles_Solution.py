@@ -13,7 +13,7 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC USE retail_lakehouse;
+# MAGIC USE SCHEMA retail_lakehouse;
 # MAGIC -- Run the PySpark Auto Loader cell first, then verify:
 # MAGIC SELECT COUNT(*) AS loaded_rows FROM orders_autoloader_bronze;
 
@@ -24,8 +24,11 @@
 
 # COMMAND ----------
 
-schema_loc = "/tmp/retail_lakehouse/schemas/day25_autoloader"
-ckpt_loc = "/tmp/retail_lakehouse/checkpoints/day25_autoloader"
+catalog = spark.sql("SELECT current_catalog()").collect()[0][0]
+base_path = f"/Volumes/{catalog}/retail_lakehouse/raw_data"
+
+schema_loc = f"{base_path}/schemas/day25_autoloader"
+ckpt_loc = f"{base_path}/checkpoints/day25_autoloader"
 dbutils.fs.rm(schema_loc, recurse=True)
 dbutils.fs.rm(ckpt_loc, recurse=True)
 
@@ -35,12 +38,12 @@ query = (
     .option("header", "true")
     .option("cloudFiles.schemaLocation", schema_loc)
     .option("cloudFiles.schemaEvolutionMode", "rescue")
-    .load("/tmp/retail_lakehouse/raw_data/incoming_csv/orders_batch1")
+    .load(f"{base_path}/incoming_csv/orders_batch1")
     .writeStream
     .format("delta")
     .option("checkpointLocation", ckpt_loc)
     .trigger(availableNow=True)
-    .toTable("retail_lakehouse.orders_autoloader_bronze")
+    .toTable(f"{catalog}.retail_lakehouse.orders_autoloader_bronze")
 )
 query.awaitTermination()
-display(spark.table("retail_lakehouse.orders_autoloader_bronze").limit(5))
+display(spark.table(f"{catalog}.retail_lakehouse.orders_autoloader_bronze").limit(5))

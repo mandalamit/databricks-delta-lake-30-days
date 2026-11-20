@@ -1,13 +1,13 @@
 # Databricks Delta Lake: 30-Day Industry Practice Challenge
 
-A hands-on, industry-standard 30-day practice repository to master **Delta Lake** in **Databricks** using both **SQL** and **PySpark**. Built around a realistic **E-Commerce & Logistics Lakehouse (`retail_lakehouse`)** domain.
+A hands-on, industry-standard 30-day practice repository to master **Delta Lake** in **Databricks** using both **SQL** and **PySpark**. Built around a realistic **E-Commerce & Logistics Lakehouse (`retail_lakehouse`)** domain and **100% compatible with Databricks Free Edition (Unity Catalog & Serverless Compute)** as well as Enterprise workspaces.
 
 ## Repository Structure
 
 ```text
 databricks-delta-lake-30-days/
 ├── README.md                          # Main guide & 30-day curriculum
-├── Day00_Setup.py                     # Run this FIRST to generate all datasets
+├── Day00_Setup.py                     # Run this FIRST to create schema, Volume & all datasets
 ├── assignments/                       # 30 hands-on problem notebooks (starter templates)
 │   ├── README.md
 │   ├── Day01_Managed_vs_External_Tables.py
@@ -20,14 +20,14 @@ databricks-delta-lake-30-days/
     └── Day30_Capstone_Medallion_Pipeline_Solution.py
 ```
 
-## Quick Start (Databricks Community Edition & Enterprise)
+## Quick Start (Databricks Free Edition & Enterprise)
 
 1. **Import into Databricks:**
-   - **GitHub / Databricks Repos (Enterprise):** Clone this repository directly via **Workspace > Repos > Add Repo**.
-   - **Databricks Community Edition:** Download this repo as a ZIP, unzip it, and import `Day00_Setup.py` and the `assignments/` notebooks via **Workspace > Import**.
+   - **Git Folders / Repos:** Connect this GitHub repository via **Workspace > Create > Git folder**.
+   - **Manual Import:** Download this repo as a ZIP, unzip it, and import `Day00_Setup.py` and the `assignments/` notebooks via **Workspace > Import**.
 2. **Run `Day00_Setup.py` First:**
-   - Attach the notebook to a cluster and click **Run All**.
-   - This creates the `retail_lakehouse` database and generates synthetic Parquet, CSV, JSON, and Delta datasets in `/tmp/retail_lakehouse/raw_data` (no external downloads required).
+   - Attach to Serverless compute (or your cluster) and click **Run All**.
+   - Automatically detects your active Unity Catalog (e.g., `workspace` in Free Edition), creates the `retail_lakehouse` schema and managed Volume `raw_data` (`/Volumes/<catalog>/retail_lakehouse/raw_data`), and generates all Parquet, CSV, JSON, and Delta datasets—no public DBFS root (`/tmp`) or external downloads required.
 3. **Solve 1 Assignment Per Day:**
    - Open `assignments/DayXX_*.py`, read the industry scenario and instructions, and write your SQL and PySpark solutions directly in the `# TODO` cells.
    - Check your work against `solutions/DayXX_*_Solution.py`.
@@ -35,7 +35,7 @@ databricks-delta-lake-30-days/
 ## 30-Day Curriculum
 
 ### Week 1: Core Foundations, ACID Transactions & DML
-- **Day 01:** Managed vs. External Tables & `_delta_log`
+- **Day 01:** Managed Tables, Path-Based Delta & `_delta_log`
 - **Day 02:** Convert to Delta & `COPY INTO`
 - **Day 03:** CRUD & Selective Overwrites (`replaceWhere`)
 - **Day 04:** `MERGE INTO` (Upserts & Deduplication)

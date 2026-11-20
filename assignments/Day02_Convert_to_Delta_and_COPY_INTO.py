@@ -6,10 +6,9 @@
 # MAGIC Migrating legacy Parquet archives in-place and loading daily CSV drops idempotently.
 # MAGIC
 # MAGIC ### Tasks
-# MAGIC - Copy `/tmp/retail_lakehouse/raw_data/legacy_parquet/orders` to a working path and convert it in-place using `CONVERT TO DELTA`.
-# MAGIC - Create an empty Delta table `orders_csv_bronze` and load `/tmp/retail_lakehouse/raw_data/incoming_csv/orders_batch1` using `COPY INTO`.
+# MAGIC - Copy `/Volumes/<catalog>/retail_lakehouse/raw_data/legacy_parquet/orders` to a working folder inside your Volume and convert it in-place using `DeltaTable.convertToDelta()`.
+# MAGIC - Create an empty Delta table `orders_csv_bronze` and load `/Volumes/<catalog>/retail_lakehouse/raw_data/incoming_csv/orders_batch1` using `COPY INTO`.
 # MAGIC - Re-run `COPY INTO` to verify idempotency (0 new rows loaded).
-# MAGIC - In PySpark, convert a Parquet folder using `DeltaTable.convertToDelta()`.
 # MAGIC
 # MAGIC > **Prerequisite:** Make sure you have run `Day00_Setup.py` once before running this notebook.
 
@@ -21,9 +20,9 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC USE retail_lakehouse;
+# MAGIC USE SCHEMA retail_lakehouse;
 # MAGIC
-# MAGIC -- TODO: Write your SQL solution below
+# MAGIC -- TODO: Write your SQL solution below (replace 'workspace' if using a different catalog)
 
 # COMMAND ----------
 

@@ -1,12 +1,12 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Day 00: Environment & Synthetic Dataset Setup
+# MAGIC # Day 00: Environment & Synthetic Dataset Setup (Databricks Free Edition & Enterprise)
 # MAGIC
 # MAGIC Run this notebook **once** before starting Day 1.
 # MAGIC
 # MAGIC ### What this notebook creates:
-# MAGIC 1. Database: `retail_lakehouse`
-# MAGIC 2. Base storage path: `/tmp/retail_lakehouse/raw_data` (works on both Community Edition and Enterprise workspaces)
+# MAGIC 1. Schema: `<current_catalog>.retail_lakehouse` (e.g., `workspace.retail_lakehouse` in Free Edition)
+# MAGIC 2. Managed Unity Catalog Volume: `/Volumes/<current_catalog>/retail_lakehouse/raw_data`
 # MAGIC 3. Datasets:
 # MAGIC    - `legacy_parquet/orders` (10,000 rows in Parquet format)
 # MAGIC    - `incoming_csv/orders_batch1` (1,000 rows in CSV format)
@@ -18,15 +18,19 @@
 
 from pyspark.sql import functions as F
 
-# Create database (works in both Hive Metastore / Community Edition and Unity Catalog)
-spark.sql("CREATE DATABASE IF NOT EXISTS retail_lakehouse")
-spark.sql("USE retail_lakehouse")
+# Detect active Unity Catalog (typically 'workspace' in Databricks Free Edition)
+catalog = spark.sql("SELECT current_catalog()").collect()[0][0]
+schema = "retail_lakehouse"
+volume = "raw_data"
 
-base_path = "/tmp/retail_lakehouse/raw_data"
-dbutils.fs.mkdirs(base_path)
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{schema}")
+spark.sql(f"USE {catalog}.{schema}")
+spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.{volume}")
 
-print("Using database: retail_lakehouse")
-print("Using raw data path:", base_path)
+base_path = f"/Volumes/{catalog}/{schema}/{volume}"
+
+print(f"Using schema: {catalog}.{schema}")
+print(f"Using Volume path: {base_path}")
 
 # COMMAND ----------
 
@@ -64,7 +68,7 @@ orders_df.write.mode("overwrite").parquet(f"{base_path}/legacy_parquet/orders")
 orders_df.limit(1000).write.mode("overwrite").option("header", "true").csv(f"{base_path}/incoming_csv/orders_batch1")
 
 # Write base Delta table for reuse across exercises
-orders_df.write.mode("overwrite").format("delta").saveAsTable("retail_lakehouse.orders_base")
+orders_df.write.mode("overwrite").format("delta").saveAsTable(f"{catalog}.{schema}.orders_base")
 
 print("Orders dataset generated successfully.")
 
@@ -89,7 +93,7 @@ customers_df = (
     .withColumn("email", F.concat(F.lit("user"), F.col("customer_id"), F.lit("@example.com")))
 )
 
-customers_df.write.mode("overwrite").format("delta").saveAsTable("retail_lakehouse.dim_customers")
+customers_df.write.mode("overwrite").format("delta").saveAsTable(f"{catalog}.{schema}.dim_customers")
 print("Customers dataset generated successfully.")
 
 # COMMAND ----------
@@ -118,4 +122,6 @@ print("Clickstream JSON dataset generated successfully.")
 
 # MAGIC %sql
 # MAGIC -- Verify setup
+# MAGIC USE SCHEMA retail_lakehouse;
 # MAGIC SHOW TABLES IN retail_lakehouse;
+# MAGIC SHOW VOLUMES IN retail_lakehouse;

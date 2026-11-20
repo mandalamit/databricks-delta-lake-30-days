@@ -13,7 +13,7 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC USE retail_lakehouse;
+# MAGIC USE SCHEMA retail_lakehouse;
 # MAGIC 
 # MAGIC CREATE OR REPLACE TABLE clickstream_variant (
 # MAGIC   id INT,
@@ -35,8 +35,11 @@
 
 from pyspark.sql import functions as F
 
-raw_df = spark.read.text("/tmp/retail_lakehouse/raw_data/clickstream_json").limit(20)
-variant_df = raw_df.select(F.parse_json(F.col("value")).alias("payload"))
-variant_df.write.format("delta").mode("overwrite").saveAsTable("retail_lakehouse.clickstream_variant_pyspark")
+catalog = spark.sql("SELECT current_catalog()").collect()[0][0]
+base_path = f"/Volumes/{catalog}/retail_lakehouse/raw_data"
 
-display(spark.sql("SELECT payload:event_id::INT AS event_id, payload:metadata.device::STRING AS device FROM retail_lakehouse.clickstream_variant_pyspark LIMIT 5"))
+raw_df = spark.read.text(f"{base_path}/clickstream_json").limit(20)
+variant_df = raw_df.select(F.parse_json(F.col("value")).alias("payload"))
+variant_df.write.format("delta").mode("overwrite").saveAsTable(f"{catalog}.retail_lakehouse.clickstream_variant_pyspark")
+
+display(spark.sql(f"SELECT payload:event_id::INT AS event_id, payload:metadata.device::STRING AS device FROM {catalog}.retail_lakehouse.clickstream_variant_pyspark LIMIT 5"))
