@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Day 00: Environment & Synthetic Dataset Setup (Databricks Free Edition & Enterprise)
 # MAGIC
@@ -43,14 +47,14 @@ orders_df = (
         "region",
         F.element_at(
             F.array(F.lit("APAC"), F.lit("EMEA"), F.lit("NA"), F.lit("LATAM")),
-            (F.col("order_id") % 4) + 1,
+            ((F.col("order_id") % 4) + 1).cast("int"),
         ),
     )
     .withColumn(
         "status",
         F.element_at(
             F.array(F.lit("COMPLETED"), F.lit("PENDING"), F.lit("SHIPPED"), F.lit("CANCELLED")),
-            (F.col("order_id") % 4) + 1,
+            ((F.col("order_id") % 4) + 1).cast("int"),
         ),
     )
     .withColumn("total_amount", F.round(F.rand(seed=42) * 500 + 10, 2))
@@ -81,13 +85,16 @@ customers_df = (
     .withColumn("customer_name", F.concat(F.lit("Customer_"), F.col("customer_id")))
     .withColumn(
         "tier",
-        F.element_at(F.array(F.lit("Bronze"), F.lit("Silver"), F.lit("Gold")), (F.col("customer_id") % 3) + 1),
+        F.element_at(
+            F.array(F.lit("Bronze"), F.lit("Silver"), F.lit("Gold")),
+            ((F.col("customer_id") % 3) + 1).cast("int"),
+        ),
     )
     .withColumn(
         "city",
         F.element_at(
             F.array(F.lit("Bengaluru"), F.lit("Mumbai"), F.lit("London"), F.lit("New York")),
-            (F.col("customer_id") % 4) + 1,
+            ((F.col("customer_id") % 4) + 1).cast("int"),
         ),
     )
     .withColumn("email", F.concat(F.lit("user"), F.col("customer_id"), F.lit("@example.com")))
